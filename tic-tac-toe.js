@@ -2,7 +2,7 @@ var ttc = (function() {
     const LEVEL = 3;
     var model,
     turn = false,
-    startGame = false,
+    endGame = true,
     valueMap = {
         O: -1,
         X: 1
@@ -37,9 +37,14 @@ var ttc = (function() {
         };
     }
 
-    function addStep(character, row, column) {   
+    function addStep(character, row, column) {
+        let pattern;
         updateModel(character, row, column);
-        return checkPattern(row, column);
+        pattern = checkPattern(row, column);
+        if(pattern) {
+            markCompleted(pattern);
+        }
+
     }
     
     function checkPattern(row, col) {
@@ -50,7 +55,7 @@ var ttc = (function() {
             sum_positive = LEVEL,
             sum_negative = -LEVEL; 
         
-        startGame = false;
+        endGame = true;
         
         if(r.count === LEVEL && (r.sum === sum_positive || r.sum === sum_negative)) {
             return `row-${row}`;
@@ -66,8 +71,9 @@ var ttc = (function() {
         if(d2.count === LEVEL && (d2.sum === sum_positive || d2.sum === sum_negative)){
             return `diagonal-2`;
         }
+        endGame = false;
 
-        startGame = true;
+        return endGame;
     }
 
     function updateModel(character, row, column) {
@@ -100,7 +106,7 @@ var ttc = (function() {
         var container = document.querySelector('.game-container');
         initializeGame();        
         container.addEventListener('click', handleClick);
-        startGame = true;
+        endGame = false;
 
     }
     
@@ -126,10 +132,49 @@ var ttc = (function() {
     }
 
     function isEmptyCell(row, column) {
-        if(!startGame || model.row[row].items[column]) {
+        if(endGame || model.row[row].items[column]) {
             return false;
         }
         return true;
+    }
+
+    function markCompleted(pattern) {
+        if(endGame && pattern) {
+            let p = pattern.split('-'),
+                patternType = p[0],
+                index = p[1],
+                elements = getDomCellCollection(patternType, index);
+            
+            elements.forEach(function(el) {
+                el.classList.add('marked');
+            });
+        }
+        
+    }
+
+    function getDomCellCollection(type, index) {
+        let query = '';
+        if(type === 'diagonal') {
+            let qArr = [];
+            if(index == 1) {
+                for(let i = 1; i <= LEVEL ; i++) {
+                    qArr.push(`.row[data-i="${i}"] > .column[data-i="${i}"]`);
+                }
+
+            }
+
+            if(index == 2) {
+                let j = LEVEL;
+                for(let i = 1; i <= LEVEL ; i++) {
+                    qArr.push(`.row[data-i="${i}"] > .column[data-i="${j--}"]`);
+                }
+            }
+            
+            query = qArr.join(',');
+        } else {
+            query = `.${type}[data-i="${index}"]`;
+        }
+        return document.querySelectorAll(query);
     }
 
     

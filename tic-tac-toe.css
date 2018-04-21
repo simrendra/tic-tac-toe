@@ -24,3 +24,7 @@
     font-size: 5em;
     user-select: none
 }
+
+.tic-tac-toe .marked {
+    color: red;
+}
