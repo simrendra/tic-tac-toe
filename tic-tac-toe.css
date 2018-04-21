@@ -22,4 +22,5 @@
     border: solid gray 1px;
     padding: 10px;
     font-size: 5em;
+    user-select: none
 }
